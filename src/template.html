@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coquitlam Lake summer drawdown</title>
+<style>
+:root { color-scheme: light dark; font-family: ui-sans-serif, system-ui, sans-serif; }
+body { max-width: 1500px; margin: 0 auto; padding: 24px; background: Canvas; color: CanvasText; }
+h1 { margin-bottom: 4px; } .muted { color: GrayText; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 24px 0; }
+.stat, .conclusions { border: 1px solid color-mix(in srgb, CanvasText 22%, Canvas); border-radius: 8px; padding: 16px; }
+.value { font-size: 1.7rem; font-weight: 700; margin-top: 6px; } .label { font-size: .85rem; color: GrayText; }
+.conclusions li { margin: .65rem 0; } .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 24px; }
+.chart { min-height: 420px; border: 1px solid color-mix(in srgb, CanvasText 22%, Canvas); border-radius: 8px; }
+footer { margin-top: 32px; font-size: .85rem; color: GrayText; line-height: 1.5; }
+</style>
+</head>
+<body>
+<h1>Coquitlam Lake summer drawdown</h1>
+<div class="muted" id="subtitle"></div>
+<section class="conclusions"><h2>Conclusions</h2><ul id="conclusions"></ul></section>
+<section class="stats" id="stats"></section>
+<p><label for="history-window">Historical envelope: </label><select id="history-window"><option value="primary">2010–2025 (primary)</option><option value="full">1985–2025 (full record)</option></select></p>
+<main class="charts">
+  <div class="chart" id="levels"></div><div class="chart" id="rate"></div>
+  <div class="chart" id="drawdown"></div><div class="chart" id="ranking"></div>
+</main>
+<footer id="footer"></footer>
+<script>__PLOTLY_JS__</script>
+<script>const ANALYSIS = __ANALYSIS_JSON__;</script>
+<script>
+const a = ANALYSIS;
+const layout = {paper_bgcolor:"transparent", plot_bgcolor:"transparent", font:{color:"CanvasText"}, margin:{l:65,r:25,t:55,b:55}, legend:{orientation:"h"}};
+document.querySelector("#subtitle").textContent = `${a.station.name} (${a.station.number}) · generated ${a.generated_at} · data through ${a.as_of.date}`;
+document.querySelector("#conclusions").innerHTML = a.conclusions.map(x => `<li>${x}</li>`).join("");
+document.querySelector("#stats").innerHTML = a.stats.map(x => `<div class="stat"><div class="label">${x.label}</div><div class="value">${x.value}</div><div class="muted">${x.detail}</div></div>`).join("");
+
+function renderLevels(windowName) {
+  const summer = a.summer.envelopes[windowName];
+  Plotly.react("levels", [
+    {x:summer.days, y:summer.p90, name:`${summer.label} p90`, line:{width:0}, hoverinfo:"skip", showlegend:false},
+    {x:summer.days, y:summer.p10, name:`${summer.label} p10–p90`, fill:"tonexty", fillcolor:"rgba(100,130,160,.18)", line:{width:0}},
+    {x:summer.days, y:summer.median, name:`${summer.label} median`, line:{color:"#6e8aa3", dash:"dash"}},
+    ...a.summer.years.map(y => ({x:y.days, y:y.levels, name:String(y.year), line:{width:y.year === a.current_year ? 3 : 2}}))
+  ], {...layout, title:"Summer water level", xaxis:{title:"Day of summer (June 1 = 1)"}, yaxis:{title:"Water level (m, WSC assumed datum)", zeroline:false}});
+}
+renderLevels("primary");
+document.querySelector("#history-window").addEventListener("change", e => renderLevels(e.target.value));
+Plotly.newPlot("rate", a.derivatives.map(y => ({x:y.days, y:y.rate_cm_day, name:String(y.year), line:{width:y.year === a.current_year ? 3 : 2}})),
+ {...layout, title:"Net level-change rate (7-day mean)", xaxis:{title:"Day of summer"}, yaxis:{title:"dH/dt (cm/day)", zeroline:true, zerolinecolor:"#888"}});
+Plotly.newPlot("drawdown", a.drawdowns.map(y => ({x:y.days, y:y.drawdown_cm, name:String(y.year), line:{width:y.year === a.current_year ? 3 : 2}})),
+ {...layout, title:"Cumulative drawdown from June 1", xaxis:{title:"Day of summer"}, yaxis:{title:"Drawdown (cm)", zeroline:true}});
+Plotly.newPlot("ranking", [{x:a.same_day.levels.map(x => x.year), y:a.same_day.levels.map(x => x.level), type:"bar",
+ marker:{color:a.same_day.levels.map(x => x.year === a.current_year ? "#c75b39" : "#6e8aa3")},
+ hovertemplate:"%{x}: %{y:.2f} m<extra></extra>"}],
+ {...layout, title:`Level on ${a.same_day.label}`, xaxis:{title:"Year"}, yaxis:{title:"Water level (m, WSC assumed datum)", zeroline:false}});
+document.querySelector("#footer").innerHTML = a.footer;
+</script>
+</body></html>
