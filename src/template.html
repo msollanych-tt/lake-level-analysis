@@ -5,15 +5,106 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Coquitlam Lake summer drawdown</title>
 <style>
-:root { color-scheme: light dark; font-family: ui-sans-serif, system-ui, sans-serif; }
-body { max-width: 1500px; margin: 0 auto; padding: 24px; background: Canvas; color: CanvasText; }
-h1 { margin-bottom: 4px; } .muted { color: GrayText; }
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 24px 0; }
-.stat, .conclusions { border: 1px solid color-mix(in srgb, CanvasText 22%, Canvas); border-radius: 8px; padding: 16px; }
-.value { font-size: 1.7rem; font-weight: 700; margin-top: 6px; } .label { font-size: .85rem; color: GrayText; }
-.conclusions li { margin: .65rem 0; } .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); gap: 24px; }
-.chart { min-height: 420px; border: 1px solid color-mix(in srgb, CanvasText 22%, Canvas); border-radius: 8px; }
-footer { margin-top: 32px; font-size: .85rem; color: GrayText; line-height: 1.5; }
+:root {
+  color-scheme: light dark;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  --ink: #123047;
+  --muted: #4a6a7c;
+  --water: #1a5f7a;
+  --water-deep: #0f3d56;
+  --water-mid: #3d8aa8;
+  --water-pale: #d7ebf3;
+  --foam: rgba(255,255,255,.72);
+  --card: #f7fbfd;
+  --line: #9bb9c9;
+  --shadow: 0 10px 28px rgba(15, 61, 86, .08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #d7eaf1;
+    --muted: #9bb9c9;
+    --water-pale: #123047;
+    --foam: rgba(18, 48, 71, .72);
+    --card: #10222c;
+    --line: #3d5f72;
+    --shadow: 0 10px 28px rgba(0, 0, 0, .28);
+  }
+}
+html { background: #cfe6ef; }
+body {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 28px 24px 48px;
+  color: var(--ink);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), transparent 90px),
+    radial-gradient(1200px 280px at 50% -40px, rgba(255,255,255,.45), transparent 70%),
+    linear-gradient(180deg, #b9d7e4 0%, #d7ebf3 160px, #eaf4f8 100%);
+}
+@media (prefers-color-scheme: dark) {
+  html { background: #0c1b24; }
+  body {
+    background:
+      linear-gradient(180deg, rgba(61,138,168,.18), transparent 120px),
+      linear-gradient(180deg, #0c1b24 0%, #10222c 180px, #0f1c24 100%);
+  }
+}
+h1 { margin: 0 0 4px; color: var(--water-deep); letter-spacing: -.02em; }
+.muted { color: var(--muted); }
+.conclusions, .reading, .stat, .events {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 18px;
+  background: var(--foam);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow);
+}
+.conclusions h2, .reading h2, .events h2 { margin: 0 0 8px; font-size: 1.05rem; color: var(--water); }
+.conclusions { border-top: 4px solid var(--water-mid); }
+.events { margin-top: 16px; border-top: 4px solid #7c3aed; }
+.conclusions li, .events li { margin: .55rem 0; line-height: 1.45; }
+.reading { margin-top: 16px; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0 0;
+}
+.stat {
+  min-height: 100%;
+  border-left: 4px solid var(--water-mid);
+  padding: 14px 16px;
+}
+.value { font-size: 1.45rem; font-weight: 700; margin-top: 6px; color: var(--water-deep); letter-spacing: -.02em; overflow-wrap: anywhere; }
+.stat .muted { font-size: .78rem; line-height: 1.35; }
+.label { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.controls {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px;
+  margin: 20px 0 16px; padding: 10px 14px;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: var(--foam);
+}
+.controls select { border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; background: var(--card); color: var(--ink); }
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.chart-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 14px 8px;
+  background: #fff;
+  color: #111827;
+  box-shadow: var(--shadow);
+}
+.chart-card.hero { grid-column: 1 / -1; }
+.chart-card h3 { margin: 0; font-size: 1.05rem; color: #0f3d56; }
+.chart-card p { margin: 6px 0 0; font-size: .85rem; color: #4b5563; }
+.chart { min-height: 400px; }
+.chart-card.hero .chart { min-height: 480px; }
+footer { margin-top: 28px; font-size: .85rem; color: var(--muted); line-height: 1.5; }
+@media (max-width: 980px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .charts { grid-template-columns: 1fr; }
+  .controls { border-radius: 12px; }
+}
 </style>
 </head>
 <body>
@@ -21,40 +112,105 @@ footer { margin-top: 32px; font-size: .85rem; color: GrayText; line-height: 1.5;
 <div class="muted" id="subtitle"></div>
 <section class="conclusions"><h2>Conclusions</h2><ul id="conclusions"></ul></section>
 <section class="stats" id="stats"></section>
-<p><label for="history-window">Historical envelope: </label><select id="history-window"><option value="primary">2010–2025 (primary)</option><option value="full">1985–2025 (full record)</option></select></p>
+<section class="events"><h2>Detected flow events</h2><p class="muted">From lake level, 08MH002, 08MH141, and WUP fish-flow targets. Uncheck Summer Focus to see spring shading on the charts. News can confirm a storm or a work notice; this pipeline does not scrape it.</p><ul id="events"></ul></section>
+<section class="reading"><h2>How to read this</h2><ul>
+  <li>Hover for exact values; click legend items to isolate a year.</li>
+  <li><strong>dH/dt</strong> is lake-level change over a seven-day window. Negative means the lake is falling. <strong>dQ/dt</strong> is the river-discharge change at Port Coquitlam.</li>
+  <li>Volumes and “river as lake-cm/day” assume a 12.5 km² surface. That is a first-order conversion, not a stage-storage curve. 08MH002 includes tributaries, so the river-as-cm/day line is an <em>upper bound</em> on dam release.</li>
+  <li><strong>WUP fish flows</strong> from Coquitlam Dam are 1–6 m³/s by month (Treatment 2 order). A 50–100 m³/s pulse is not a mandatory fish release. The dotted grey line on the river chart is that dam-release target, not a 08MH002 forecast.</li>
+  <li><strong>Freshet vs spill:</strong> Coquitlam is rain-dominated. Fraser snowmelt freshet is typically May–June. If 08MH141 spikes and the lake rises, that is inflow. If 08MH002 stays high after 08MH141 collapses and the lake falls, that is controlled spill / flood storage. A construction drawdown would look like the second pattern with <em>no</em> preceding inflow spike — hydrometrics cannot read the work order.</li>
+  <li>Dual-axis charts: blue is the left axis, orange is the right. On the change-rate comparison, both axes are cm/day with the same numeric range, so zero is one shared line.</li>
+</ul></section>
+<p class="controls"><label><input id="summer-focus" type="checkbox" checked> Summer Focus</label><label for="history-window">Historical envelope: <select id="history-window"><option value="primary">2010–2025 (primary)</option><option value="full">1985–2025 (full record)</option></select></label></p>
 <main class="charts">
-  <div class="chart" id="levels"></div><div class="chart" id="rate"></div>
-  <div class="chart" id="drawdown"></div><div class="chart" id="ranking"></div>
+  <section class="chart-card hero"><h3>Lake level by calendar date</h3><p>Lines are individual years aligned by month and day; the shaded band is the historical 10th–90th percentile range. Unit: metres, WSC assumed datum.</p><div class="chart" id="levels"></div></section>
+  <section class="chart-card"><h3>Lake level-change rate</h3><p>Seven-day mean dH/dt. Negative values mean the lake is falling. Unit: centimetres per day.</p><div class="chart" id="rate"></div></section>
+  <section class="chart-card"><h3>Cumulative lake drawdown</h3><p>Fall in lake level since the first observation in the visible period. 1 cm ≈ 0.125 million m³ at 12.5 km². Unit: centimetres.</p><div class="chart" id="drawdown"></div></section>
+  <section class="chart-card"><h3>Downstream river discharge</h3><p>Orange: 08MH002 at Port Coquitlam (dam release plus lower tributaries). Teal: 08MH141 above the lake (partial inflow). Dotted grey: WUP dam fish-flow target (1–6 m³/s). Unit: m³/s.</p><div class="chart" id="river-flow"></div></section>
+  <section class="chart-card"><h3>River flow-change rate</h3><p>Seven-day mean dQ/dt at 08MH002. Positive values mean downstream river flow is rising. Unit: m³/s per day.</p><div class="chart" id="river-rate"></div></section>
+  <section class="chart-card"><h3>Lake level and river discharge</h3><p><span style="color:#1d4f91;font-weight:700">Left / blue:</span> lake level in metres. <span style="color:#b45309;font-weight:700">Right / orange:</span> river discharge in m³/s. Compare timing, not magnitude. Lake zero is not shown; forcing it would flatten the seasonal signal.</p><div class="chart" id="lake-river-overlay"></div></section>
+  <section class="chart-card"><h3>Lake drop vs river-equivalent drop</h3><p><span style="color:#1d4f91;font-weight:700">Left / blue:</span> actual lake dH/dt (cm/day). <span style="color:#b45309;font-weight:700">Right / orange:</span> 08MH002 converted to lake-cm/day using 12.5 km². Same numeric range, so zero is one line. If orange sits well below the blue drop, river release cannot explain the drawdown.</p><div class="chart" id="derivative-comparison"></div></section>
 </main>
 <footer id="footer"></footer>
 <script>__PLOTLY_JS__</script>
 <script>const ANALYSIS = __ANALYSIS_JSON__;</script>
 <script>
 const a = ANALYSIS;
-const layout = {paper_bgcolor:"transparent", plot_bgcolor:"transparent", font:{color:"CanvasText"}, margin:{l:65,r:25,t:55,b:55}, legend:{orientation:"h"}};
+const lakeColor = a.colors.lake;
+const riverColor = a.colors.river;
+const inflowColor = a.colors.inflow || "#0f766e";
+const eventFill = {storm_then_spill:"rgba(124,58,237,.16)", storm_inflow:"rgba(15,118,110,.16)", controlled_spill:"rgba(180,83,9,.16)", high_flow:"rgba(107,114,128,.12)"};
+const layout = {autosize:true, paper_bgcolor:"#fff", plot_bgcolor:"#fff", font:{color:"#111827", size:13}, margin:{l:80,r:80,t:60,b:64},
+  legend:{orientation:"h", yanchor:"bottom", y:1.02, xanchor:"left", x:0, bgcolor:"rgba(255,255,255,.9)", bordercolor:"#9ca3af", borderwidth:1}};
+const plotCfg = {responsive:true, displaylogo:false};
 document.querySelector("#subtitle").textContent = `${a.station.name} (${a.station.number}) · generated ${a.generated_at} · data through ${a.as_of.date}`;
 document.querySelector("#conclusions").innerHTML = a.conclusions.map(x => `<li>${x}</li>`).join("");
 document.querySelector("#stats").innerHTML = a.stats.map(x => `<div class="stat"><div class="label">${x.label}</div><div class="value">${x.value}</div><div class="muted">${x.detail}</div></div>`).join("");
+document.querySelector("#events").innerHTML = (a.events || []).map(e =>
+  `<li><strong>${e.title}</strong> · ${e.label_start}–${e.label_end} · lake peak ${e.lake_peak_m} m then −${e.drawdown_m} m (~${e.drawdown_mm3} Mm³) · 08MH002 peak ${e.outflow_peak} m³/s (${e.outflow_vs_wup}× WUP ${e.wup_target}) · 08MH141 peak ${e.inflow_peak} m³/s</li>`
+).join("") || "<li>No storm-scale or spill-scale events detected in the current-year record.</li>";
 
-function renderLevels(windowName) {
-  const summer = a.summer.envelopes[windowName];
-  Plotly.react("levels", [
-    {x:summer.days, y:summer.p90, name:`${summer.label} p90`, line:{width:0}, hoverinfo:"skip", showlegend:false},
-    {x:summer.days, y:summer.p10, name:`${summer.label} p10–p90`, fill:"tonexty", fillcolor:"rgba(100,130,160,.18)", line:{width:0}},
-    {x:summer.days, y:summer.median, name:`${summer.label} median`, line:{color:"#6e8aa3", dash:"dash"}},
-    ...a.summer.years.map(y => ({x:y.days, y:y.levels, name:String(y.year), line:{width:y.year === a.current_year ? 3 : 2}}))
-  ], {...layout, title:"Summer water level", xaxis:{title:"Day of summer (June 1 = 1)"}, yaxis:{title:"Water level (m, WSC assumed datum)", zeroline:false}});
+function eventShapes(events) {
+  return events.map(e => ({type:"rect", xref:"x", yref:"paper", x0:e.label_start, x1:e.label_end, y0:0, y1:1,
+    fillcolor:eventFill[e.kind] || eventFill.high_flow, line:{width:0}, layer:"below"}));
 }
-renderLevels("primary");
-document.querySelector("#history-window").addEventListener("change", e => renderLevels(e.target.value));
-Plotly.newPlot("rate", a.derivatives.map(y => ({x:y.days, y:y.rate_cm_day, name:String(y.year), line:{width:y.year === a.current_year ? 3 : 2}})),
- {...layout, title:"Net level-change rate (7-day mean)", xaxis:{title:"Day of summer"}, yaxis:{title:"dH/dt (cm/day)", zeroline:true, zerolinecolor:"#888"}});
-Plotly.newPlot("drawdown", a.drawdowns.map(y => ({x:y.days, y:y.drawdown_cm, name:String(y.year), line:{width:y.year === a.current_year ? 3 : 2}})),
- {...layout, title:"Cumulative drawdown from June 1", xaxis:{title:"Day of summer"}, yaxis:{title:"Drawdown (cm)", zeroline:true}});
-Plotly.newPlot("ranking", [{x:a.same_day.levels.map(x => x.year), y:a.same_day.levels.map(x => x.level), type:"bar",
- marker:{color:a.same_day.levels.map(x => x.year === a.current_year ? "#c75b39" : "#6e8aa3")},
- hovertemplate:"%{x}: %{y:.2f} m<extra></extra>"}],
- {...layout, title:`Level on ${a.same_day.label}`, xaxis:{title:"Year"}, yaxis:{title:"Water level (m, WSC assumed datum)", zeroline:false}});
+
+function renderScope() {
+  const summerFocus = document.querySelector("#summer-focus").checked;
+  const scope = summerFocus ? a.summer : a.annual;
+  const scopeName = summerFocus ? "Summer" : "Full-year";
+  const windowName = document.querySelector("#history-window").value;
+  const envelope = scope.envelopes[windowName];
+  const derivRange = summerFocus ? a.axis_ranges.derivative.summer : a.axis_ranges.derivative.annual;
+  const visibleEvents = (a.events || []).filter(e => !summerFocus || e.overlaps_summer);
+  const shapes = eventShapes(visibleEvents);
+  Plotly.react("levels", [
+    {x:envelope.dates, y:envelope.p90, name:`${envelope.label} p90`, line:{width:0}, hoverinfo:"skip", showlegend:false},
+    {x:envelope.dates, y:envelope.p10, name:`${envelope.label} p10–p90`, fill:"tonexty", fillcolor:"rgba(100,130,160,.18)", line:{width:0}},
+    {x:envelope.dates, y:envelope.median, name:`${envelope.label} median`, line:{color:"#6e8aa3", dash:"dash"}},
+    ...scope.years.map(y => ({x:y.dates, y:y.levels, name:String(y.year), line:{width:y.year === a.current_year ? 3 : 2}}))
+  ], {...layout, title:`${scopeName} water level`, xaxis:{title:"Calendar date"}, yaxis:{title:"Water level (m, WSC assumed datum)", zeroline:false}, shapes}, plotCfg);
+  Plotly.react("rate", scope.derivatives.map(y => ({x:y.dates, y:y.rate_cm_day, name:String(y.year), line:{width:y.year === a.current_year ? 3 : 2}})),
+   {...layout, title:`${scopeName} lake level-change rate (7-day mean)`, xaxis:{title:"Calendar date"}, yaxis:{title:"dH/dt (cm/day)", zeroline:true, zerolinecolor:"#888"}}, plotCfg);
+  Plotly.react("drawdown", scope.drawdowns.map(y => ({x:y.dates, y:y.drawdown_cm, name:String(y.year), line:{width:y.year === a.current_year ? 3 : 2}})),
+   {...layout, title:`${scopeName} cumulative drawdown`, xaxis:{title:"Calendar date"}, yaxis:{title:"Drawdown (cm)", zeroline:true}}, plotCfg);
+  const riverYears = summerFocus ? a.river.years : a.river.annual_years;
+  const inflowYears = summerFocus ? a.river.upstream_years : a.river.annual_upstream_years;
+  const currentInflow = (inflowYears || []).find(y => y.year === a.current_year);
+  const wup = ((summerFocus ? a.wup && a.wup.summer : a.wup && a.wup.annual) || {dates:[], target:[]});
+  Plotly.react("river-flow", [
+    ...riverYears.map(y => ({x:y.dates, y:y.flow, name:`${y.year} 08MH002`, line:{width:y.year === a.current_year ? 3 : 2}})),
+    ...(currentInflow ? [{x:currentInflow.dates, y:currentInflow.flow, name:`${a.current_year} 08MH141 inflow`, line:{width:2.5, color:inflowColor}}] : []),
+    {x:wup.dates, y:wup.target, name:"WUP fish-flow target", line:{width:2, color:"#6b7280", dash:"dot"}}
+  ], {...layout, title:`${scopeName} river flow vs WUP fish target`, xaxis:{title:"Calendar date"}, yaxis:{title:"Discharge (m³/s)", zeroline:false}, shapes}, plotCfg);
+  Plotly.react("river-rate", riverYears.map(y => ({x:y.dates, y:y.flow_change_cms_day, name:String(y.year), line:{width:y.year === a.current_year ? 3 : 2}})),
+   {...layout, title:`${scopeName} river-flow change rate (7-day mean)`, xaxis:{title:"Calendar date"}, yaxis:{title:"dQ/dt (m³/s per day)", zeroline:true, zerolinecolor:"#888"}}, plotCfg);
+  const current = summerFocus ? a.river.relationship : a.river.annual_relationship;
+  const dualLabels = [
+    {text:"LEFT · lake", xref:"paper", yref:"paper", x:0.01, y:0.98, showarrow:false, font:{color:lakeColor, size:13}, xanchor:"left"},
+    {text:"RIGHT · river", xref:"paper", yref:"paper", x:0.99, y:0.98, showarrow:false, font:{color:riverColor, size:13}, xanchor:"right"}
+  ];
+  Plotly.react("lake-river-overlay", [
+    {x:current.dates, y:current.level, name:"Lake level (LEFT, m)", line:{width:3, color:lakeColor}},
+    {x:current.dates, y:current.flow, name:"River discharge (RIGHT, m³/s)", yaxis:"y2", line:{width:3, color:riverColor, dash:"dot"}}
+  ], {...layout, title:`${scopeName}: lake level (left, m) vs river discharge (right, m³/s)`, xaxis:{title:"Calendar date"},
+    yaxis:{title:{text:"LEFT · lake level (metres)", font:{color:lakeColor, size:14}}, tickfont:{color:lakeColor, size:12}, zeroline:false, showgrid:true},
+    yaxis2:{title:{text:"RIGHT · river discharge (m³/s)", font:{color:riverColor, size:14}}, tickfont:{color:riverColor, size:12}, overlaying:"y", side:"right", zeroline:false, showgrid:false},
+    annotations: dualLabels}, plotCfg);
+  Plotly.react("derivative-comparison", [
+    {x:current.dates, y:current.lake_level_change_cm_day, name:"Lake dH/dt (LEFT, cm/day)", line:{width:3, color:lakeColor}},
+    {x:current.dates, y:current.river_equivalent_cm_day, name:"River as lake-cm/day (RIGHT, cm/day)", yaxis:"y2", line:{width:3, color:riverColor, dash:"dot"}}
+  ], {...layout, title:`${scopeName}: lake drop vs river-equivalent drop (shared cm/day scale)`, xaxis:{title:"Calendar date"},
+    yaxis:{title:{text:"LEFT · lake dH/dt (cm/day)", font:{color:lakeColor, size:14}}, tickfont:{color:lakeColor, size:12}, range:derivRange, zeroline:true, zerolinecolor:"#111827", zerolinewidth:2},
+    yaxis2:{title:{text:"RIGHT · river as lake-cm/day", font:{color:riverColor, size:14}}, tickfont:{color:riverColor, size:12}, overlaying:"y", side:"right", range:derivRange, matches:"y", zeroline:false, showgrid:false},
+    annotations: [
+      ...dualLabels,
+      {text:"zero (both axes)", xref:"paper", yref:"y", x:0.01, y:0, showarrow:false, xanchor:"left", yanchor:"bottom", font:{size:11, color:"#111827"}}
+    ]}, plotCfg);
+}
+renderScope();
+document.querySelector("#summer-focus").addEventListener("change", renderScope);
+document.querySelector("#history-window").addEventListener("change", renderScope);
 document.querySelector("#footer").innerHTML = a.footer;
 </script>
 </body></html>
